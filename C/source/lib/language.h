@@ -40,6 +40,7 @@
 extern int lang_error;
 void lang_dump();
 
+char lang__defVar(char* name,int type);
 int lang_findToken(FILE* lang_in);
 void lang_skipWhitespace(FILE* lang_in);
 char* lang_getVarName(FILE* lang_in);

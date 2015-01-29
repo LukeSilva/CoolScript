@@ -9,6 +9,9 @@ char* lang_eval_parse_string(FILE* lang_in);
 int   lang_eval_doIf_int(FILE* lang_in,char* filename);
 void  lang_eval_doIf_void(FILE* lang_in,char* filename);
 char* lang_eval_doIf_string(FILE* lang_in,char* filename);
+int   lang_eval_doFor_int(FILE* lang_in,char* filename);
+
+
 int   lang_eval_doWhile_int(FILE* lang_in,char* filename);
 void  lang_eval_doWhile_void(FILE* lang_in,char* filename);
 char* lang_eval_doWhile_string(FILE* lang_in,char* filename);
@@ -536,6 +539,25 @@ char* lang_eval_doIf_string(FILE* lang_in,char* filename){
   }
 
   return ret;
+}
+int lang_eval_doFor_int(FILE* lang_in,char* filename){
+  int ret;
+  int level;
+  char* countername;
+  int counterid;
+  int tok;
+  int start;
+  int end;
+  fpos_t position;
+  countername = lang_getVarName(lang_in);
+  lang__defVar(countername,LANG_INT);
+  lang_skipWhitespace(lang_in);
+  fscanf(lang_in,"%d",&start);
+  lang_skipWhitespace(lang_in);
+  fscanf(lang_in,"%d",&end);
+  counterid = lang_getVarId(countername);
+  lang_setVar_int(counterid,start);
+  fgetpos(lang_in,&position);
 }
 int lang_eval_doWhile_int(FILE* lang_in,char* filename){
   int stmt;

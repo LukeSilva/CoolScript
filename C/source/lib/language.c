@@ -158,7 +158,6 @@ char* lang_getVarName(FILE* lang_in){
 }
 
 char lang__defVar(char* name,int type){
-
   int id;
   id = lang_nextVar();
   if (id!=-1)
