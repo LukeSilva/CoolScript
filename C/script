@@ -1,0 +1,90 @@
+#This is an example script
+
+string aaaa = @testingWhile()
+string str = @testStringFunction()
+int a = @testingIf(3 5)
+int b = @testingIf(7 2)
+string c = @testingIf(56 56)
+int d = @testingWhile()
+int e = @testCallWhileVoid()
+
+function testStringFunction {
+  string s
+  $s = @testStringFunctiontwo()
+  @puts($s)
+  @puts("\n")
+  return $s
+}
+
+function testStringFunctiontwo {
+  string s = "hello world\n"
+  return $s
+}
+
+function testCallWhileVoid {
+  @testingWhile()
+}
+
+function testingWhile {
+  @puts("Listing numbers 1 through 10\n")
+  int i
+  $i = 1
+  while $i <= 10
+  {
+    @puti($i)
+    @puts(" ")
+    $i = $i + 1
+  }
+  @puts("\n")
+}
+function testingIf {
+  @puts("--------\n");
+  if ($argA > $argB)
+  {
+    @puts("greater\n")
+  }
+  if $argA < $argB
+  {
+    @puts("less\n")
+  }
+  if $argA == $argB
+  {
+    @puts("equal\n")
+  }
+  if $argA != $argB
+  {
+    @puts("not-equal\n")
+  }
+  if $argA >= $argB
+  {
+    @puts("greater or equal\n")
+  }
+  if $argA <= $argB
+  {
+    @puts("less or equal\n")
+  }
+  if $argA >= 5 & $argA <= 10
+  {
+    @puts("A is between 5 and 10\n")
+  }
+  if $argA == 3 | $argA == 7
+  {
+    @puts("A is either 3 or 7\n")
+  }
+  @puts("--------\n")
+}
+
+function myFunction {
+  #returns the higher number of the two arguments
+  #if equal returns 0
+  if $argA > $argB
+  {
+    return $argA
+  }
+  if $argB > $argA
+  {
+    return $argB
+  }
+  return 0
+}
+

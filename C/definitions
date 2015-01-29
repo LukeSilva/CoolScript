@@ -1,0 +1,27 @@
+The parser is a two step parser, it includes two steps:
+
+Find all variables
+Evaluate variables
+
+
+
+Each line of global script begins with one of the following:
+
+int - defines an integer
+string - defines a sting
+function - defines a function
+# - comment, ignore this line
+\n - ignore this line
+
+
+Each line of evaluated script begins with one of the following:
+
+$ - starts a variable assignment
+# - comment
+\n - ignore this line
+int - defines an integer
+string - defines a string
+return - returns a variable / string / int
+call - calls a function
+} / EOF - ends the evaluated script (when in a function)
+
