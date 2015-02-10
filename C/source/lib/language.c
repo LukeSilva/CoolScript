@@ -112,7 +112,7 @@ int lang_findToken(FILE* lang_in){
     return LANG_NUMBER;
   }
   else if (c == EOF){
-    //printf("Reached end-of-file\n");
+    printf("Reached end-of-file\n");
     return -1;
   }
   ungetc(c,lang_in);
@@ -127,6 +127,7 @@ int lang_findToken(FILE* lang_in){
   else if (strcmp(string,"call")==0) return LANG_CALL;
   else if (strcmp(string,"if")==0) return LANG_IF;
   else if (strcmp(string,"while")==0) return LANG_WHILE;
+  else if (strcmp(string,"for")==0) return LANG_FOR;
   else if (strcmp(string,"=")==0) return LANG_ASSIGN;
   else if (strcmp(string,"==")==0) return LANG_EQ;
   else if (strcmp(string,"!=")==0) return LANG_NEQ;
@@ -258,7 +259,7 @@ char lang_firstParse(FILE* lang_in){
     else if ( tok == LANG_VAR     || tok == LANG_RETURN    ||
               tok == LANG_CALL    || tok == LANG_END_FUNC  ||
               tok == LANG_NUMBER  || tok == LANG_IF        ||
-              tok == LANG_WHILE){
+              tok == LANG_WHILE   || tok == LANG_FOR){
       printf("Found invalid token: %d\n",tok);
       return -1;
     }
@@ -279,7 +280,8 @@ char lang_secondParse(FILE* lang_in){
     else if (tok == LANG_STRING) lang_parseString(lang_in);
     else if ( tok == LANG_VAR         || tok == LANG_RETURN     ||
               tok == LANG_CALL        || tok == LANG_END_FUNC   ||
-              tok == LANG_IF          || tok == LANG_WHILE){
+              tok == LANG_IF          || tok == LANG_WHILE      ||
+              tok == LANG_FOR){
       printf("Found invalid token during second parse: %d\n",tok);
       return -1;
     }

@@ -35,7 +35,7 @@
 #define LANG_NEQ 28 
 #define LANG_NOT 29
 #define LANG_WHILE 30
-
+#define LANG_FOR 31
 
 extern int lang_error;
 void lang_dump();

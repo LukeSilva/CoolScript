@@ -1,6 +1,9 @@
 #This is an example script
 
 string aaaa = @testingWhile()
+int f = @testingFor()
+string g = @testingFor()
+int h = @testForVoid()
 string str = @testStringFunction()
 int a = @testingIf(3 5)
 int b = @testingIf(7 2)
@@ -8,6 +11,26 @@ string c = @testingIf(56 56)
 int d = @testingWhile()
 int e = @testCallWhileVoid()
 
+function testForVoid { 
+  @testingFor()
+}
+
+function testingFor {
+  @puts("Test increment:\n")
+  for i 11 21
+  {
+    @puts("i = ")
+    @puti($i)
+    @puts("\n")
+  }
+  @puts("Test decrement:\n")
+  for i 10 0
+  {
+    @puts("i = ")
+    @puti($i)
+    @puts("\n")
+  }
+}
 function testStringFunction {
   string s
   $s = @testStringFunctiontwo()

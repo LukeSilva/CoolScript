@@ -10,8 +10,8 @@ int   lang_eval_doIf_int(FILE* lang_in,char* filename);
 void  lang_eval_doIf_void(FILE* lang_in,char* filename);
 char* lang_eval_doIf_string(FILE* lang_in,char* filename);
 int   lang_eval_doFor_int(FILE* lang_in,char* filename);
-
-
+void  lang_eval_doFor_void(FILE* lang_in,char* filename);
+char* lang_eval_doFor_string(FILE* lang_in,char* filename);
 int   lang_eval_doWhile_int(FILE* lang_in,char* filename);
 void  lang_eval_doWhile_void(FILE* lang_in,char* filename);
 char* lang_eval_doWhile_string(FILE* lang_in,char* filename);
@@ -71,6 +71,25 @@ char* lang_eval_doCallPreliminary(FILE* lang_in){
   }
   return name;
 }
+int lang_eval_getNumber(FILE* lang_in){
+  int tok;
+  int ret;
+  ret = -1;
+  tok = lang_findToken(lang_in);
+  if (tok == LANG_NUMBER){
+    fscanf(lang_in,"%d",&ret);
+  }
+  else if (tok == LANG_VAR){
+    char* name;
+    name = lang_getVarName(lang_in);
+    ret = lang_getInt(name);
+  }
+  else{
+    printf("Unexpected token while getting number: %d\n",tok);
+    lang_error = 1;
+  }
+  return ret;
+}
 char* lang_eval_doCall_string(FILE* lang_in){
   char* ret;
   char* name;
@@ -113,7 +132,7 @@ int lang_eval_getVar_int(FILE* lang_in){
     ret = lang_eval_stmt_int(lang_in);
   }
   else{
-    printf("Invalid token: %d\n",tok);
+    printf("Invalid token during getVar: %d\n",tok);
     lang_error = 1;
   }
   tok = lang_findToken(lang_in);
@@ -321,6 +340,13 @@ char* lang_eval_function_string(char* filename, int id){
         return ret;
       }
     }
+    else if (tok == LANG_FOR){
+      char* ret;
+      ret = lang_eval_doFor_string(func_in,filename);
+      if (lang_eval_returned == 1){
+        return ret;
+      }
+    }
     else if (tok == LANG_RETURN){
       lang_eval_returned = 1;
       char* ret;
@@ -374,6 +400,13 @@ int lang_eval_function_int(char* filename, int id){
         return ret;
       }
     }
+    else if (tok == LANG_FOR){
+      int ret;
+      ret = lang_eval_doFor_int(func_in,filename);
+      if (lang_eval_returned == 1){
+        return ret;
+      }
+    }
     else if (tok == LANG_RETURN){
       lang_eval_returned = 1;
       int ret;
@@ -420,6 +453,12 @@ void lang_eval_function_void(char* filename, int id){
     else if (tok == LANG_WHILE){
       lang_eval_doWhile_void(func_in,filename);
       if (lang_eval_returned==1){ 
+        return;
+      }
+    }
+    else if (tok == LANG_FOR){
+      lang_eval_doFor_void(func_in,filename);
+      if (lang_eval_returned == 1){
         return;
       }
     }
@@ -541,23 +580,198 @@ char* lang_eval_doIf_string(FILE* lang_in,char* filename){
   return ret;
 }
 int lang_eval_doFor_int(FILE* lang_in,char* filename){
-  int ret;
-  int level;
-  char* countername;
-  int counterid;
-  int tok;
+  char* name;
   int start;
   int end;
-  fpos_t position;
-  countername = lang_getVarName(lang_in);
-  lang__defVar(countername,LANG_INT);
-  lang_skipWhitespace(lang_in);
+  char c;
+  int level;
+  level = 1;
+  name = lang_getVarName(lang_in);
   fscanf(lang_in,"%d",&start);
-  lang_skipWhitespace(lang_in);
   fscanf(lang_in,"%d",&end);
-  counterid = lang_getVarId(countername);
-  lang_setVar_int(counterid,start);
-  fgetpos(lang_in,&position);
+  if (end > start)
+  {
+    int varid;
+    int line;
+    int i;
+    lang__defVar(name,LANG_INT);
+    varid = lang_getVarId(name);
+    line = lang_eval_getLinePos(lang_in,filename);
+    for (i = start; i < end; i++)
+    {
+      int ret;
+      lang_setVar_int(varid,i);
+      ret = lang_eval_function_int(filename,line);
+      if (lang_eval_returned==1){
+        return ret;
+      }
+    }
+  }
+  if (end < start)
+  {
+    int varid;
+    int line;
+    int i;
+    lang__defVar(name,LANG_INT);
+    varid = lang_getVarId(name);
+    line = lang_eval_getLinePos(lang_in,filename);
+    for (i = start; i > end; i--)
+    {
+      int ret;
+      lang_setVar_int(varid,i);
+      ret = lang_eval_function_int(filename,line);
+      if (lang_eval_returned==1){
+        return ret;
+      }
+    }
+  }
+  c = fgetc(lang_in);
+  while (c != '{'){
+    if (c == EOF){
+      lang_error = 1;
+      printf("Unexpected (end-of-file) while parsing for\n");
+    }
+    c = fgetc(lang_in);
+  }
+  while (level > 0)
+  { 
+    c = fgetc(lang_in);
+    if (c == EOF){
+      lang_error = 1;
+      printf("Unexpected (end-of-file) while parsing for\n");
+    }
+    if (c == '{') ++level;
+    if (c == '}') --level;
+  }
+}
+void lang_eval_doFor_void(FILE* lang_in,char* filename){
+  char* name;
+  int start;
+  int end;
+  char c;
+  int level;
+  level = 1;
+  name = lang_getVarName(lang_in);
+  fscanf(lang_in,"%d",&start);
+  fscanf(lang_in,"%d",&end);
+  if (end > start)
+  {
+    int varid;
+    int line;
+    int i;
+    lang__defVar(name,LANG_INT);
+    varid = lang_getVarId(name);
+    line = lang_eval_getLinePos(lang_in,filename);
+    for (i = start; i < end; i++)
+    {
+      lang_setVar_int(varid,i);
+      lang_eval_function_void(filename,line);
+      if (lang_eval_returned==1){
+        return;
+      }
+    }
+  }
+  if (end < start)
+  {
+    int varid;
+    int line;
+    int i;
+    lang__defVar(name,LANG_INT);
+    varid = lang_getVarId(name);
+    line = lang_eval_getLinePos(lang_in,filename);
+    for (i = start; i > end; i--)
+    {
+      int ret;
+      lang_setVar_int(varid,i);
+      lang_eval_function_void(filename,line);
+      if (lang_eval_returned==1){
+        return;
+      }
+    }
+  }
+  c = fgetc(lang_in);
+  while (c != '{'){
+    if (c == EOF){
+      lang_error = 1;
+      printf("Unexpected (end-of-file) while parsing for\n");
+    }
+    c = fgetc(lang_in);
+  }
+  while (level > 0)
+  { 
+    c = fgetc(lang_in);
+    if (c == EOF){
+      lang_error = 1;
+      printf("Unexpected (end-of-file) while parsing for\n");
+    }
+    if (c == '{') ++level;
+    if (c == '}') --level;
+  }
+}
+char* lang_eval_doFor_string(FILE* lang_in,char* filename){
+  char* name;
+  int start;
+  int end;
+  char c;
+  int level;
+  level = 1;
+  name = lang_getVarName(lang_in);
+  fscanf(lang_in,"%d",&start);
+  fscanf(lang_in,"%d",&end);
+  if (end > start)
+  {
+    int varid;
+    int line;
+    int i;
+    lang__defVar(name,LANG_INT);
+    varid = lang_getVarId(name);
+    line = lang_eval_getLinePos(lang_in,filename);
+    for (i = start; i < end; i++)
+    {
+      char* ret;
+      lang_setVar_int(varid,i);
+      ret = lang_eval_function_string(filename,line);
+      if (lang_eval_returned==1){
+        return ret;
+      }
+    }
+  }
+  if (end < start)
+  {
+    int varid;
+    int line;
+    int i;
+    lang__defVar(name,LANG_INT);
+    varid = lang_getVarId(name);
+    line = lang_eval_getLinePos(lang_in,filename);
+    for (i = start; i > end; i--)
+    {
+      char* ret;
+      lang_setVar_int(varid,i);
+      ret = lang_eval_function_string(filename,line);
+      if (lang_eval_returned==1){
+        return ret;
+      }
+    }
+  }
+  c = fgetc(lang_in);
+  while (c != '{'){
+    if (c == EOF){
+      lang_error = 1;
+      printf("Unexpected (end-of-file) while parsing for\n");
+    }
+    c = fgetc(lang_in);
+  }
+  while (level > 0)
+  { 
+    c = fgetc(lang_in);
+    if (c == EOF){
+      lang_error = 1;
+      printf("Unexpected (end-of-file) while parsing for\n");
+    }
+    if (c == '{') ++level;
+    if (c == '}') --level;
+  }
 }
 int lang_eval_doWhile_int(FILE* lang_in,char* filename){
   int stmt;
